@@ -38,7 +38,7 @@ describe('AccountMenu', () => {
       const history = createMemoryHistory();
       const { container } = render(
         <Router history={history}>
-          <AccountMenu isAuthenticated />
+          {AccountMenu(true)}
         </Router>
       );
       mountedWrapper = container.innerHTML;
@@ -50,7 +50,7 @@ describe('AccountMenu', () => {
       const history = createMemoryHistory();
       const { container } = (mountedWrapper = render(
         <Router history={history}>
-          <AccountMenu />
+          {AccountMenu}
         </Router>
       ));
       mountedWrapper = container.innerHTML;

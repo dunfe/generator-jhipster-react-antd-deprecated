@@ -60,31 +60,25 @@ const Sider = (props: IHeaderProps) => {
     /* jhipster-needle-add-element-to-menu - JHipster will add new menu items here */
 
     return (
-        <Layout.Sider width={200} style={{height: 'calc(100vh - 64px)'}} className="site-layout-background" collapsible collapsed={menuOpen} onCollapse={toggleMenu}>
+        <Layout.Sider width={200} className="site-layout-background" collapsible collapsed={menuOpen} onCollapse={toggleMenu}>
             <LoadingBar className="loading-bar" />
             <Menu mode="inline" selectedKeys={selectedKeys} onSelect={onSelect} style={{ height: '100%', borderRight: 0 }}>
                 <Menu.Item key="home" icon={<HomeOutlined />}>
                     <Home />
                 </Menu.Item>
-                {props.isAuthenticated && props.isAdmin && (
-                    <SubMenu key="entities" title={translate('global.menu.entities.main')} icon={<ApartmentOutlined />}>
-                        {EntitiesMenu}
-                    </SubMenu>
-                )}
-
-                {props.isAuthenticated && props.isAdmin && (
-                    <SubMenu key="admin" title={translate('global.menu.admin.main')} icon={<ClusterOutlined />}>
-                        {AdminMenu(props.isOpenAPIEnabled)}
-                    </SubMenu>
-                )}
+                <SubMenu key="entities" title={translate('global.menu.entities.main')} icon={<ApartmentOutlined />}>
+                    {EntitiesMenu}
+                </SubMenu>
+                <SubMenu key="admin" title={translate('global.menu.admin.main')} icon={<ClusterOutlined />}>
+                    {AdminMenu(props.isOpenAPIEnabled)}
+                </SubMenu>
                 <%_ if (enableTranslation) { _%>
                 <SubMenu key="lang" title={props.currentLocale ? languages[props.currentLocale].name : undefined} icon={<GlobalOutlined />}>
                     <LocaleMenu currentLocale={props.currentLocale} />
                 </SubMenu>
-          <%_ } _%>
-
+                <%_ } _%>
                 <SubMenu key="account" title={translate('global.menu.account.main')} icon={<UserOutlined />}>
-                {AccountMenu(props.isAuthenticated)}
+                        {AccountMenu(props.isAuthenticated)}
                 </SubMenu>
             </Menu>
         </Layout.Sider>

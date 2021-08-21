@@ -115,7 +115,7 @@ module.exports = class extends ClientGenerator {
 
     get postWriting() {
         // Here we are not overriding this phase and hence its being handled by JHipster
-        return super._postWriting();
+        return {};
     }
 
     get install() {

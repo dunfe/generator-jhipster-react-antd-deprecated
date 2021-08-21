@@ -16,14 +16,8 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 -%>
-import React from 'react';
-import { Translate, translate } from 'react-jhipster';
-import { Menu } from 'antd';
-import { ApartmentOutlined, FileOutlined } from '@ant-design/icons';
-import {Link} from 'react-router-dom';
-
-export const EntitiesMenu = (
-    <>
-        {/* jhipster-needle-add-entity-to-menu - JHipster will add entities to the menu here */}
-    </>
-);
+export enum <%= enumName %> {
+<% enumValues.forEach((enumValue, index) => { %>
+  <%= enumValue.name %> = '<%= enumValue.value %>'<% if (index < enumValues.length - 1) { %>,<% } %>
+<% }); %>
+}

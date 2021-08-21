@@ -232,9 +232,8 @@ _%>
               id="<%= entityFileName %>-<%= primaryKey.fields[0].fieldName %>"
               label={translate('<%= primaryKey.fields[0].fieldTranslationKey %>')}
               rules={[{ required: true }]}
-              disable="true"
             >
-              <Input />
+              <Input disabled={true}/>
             </Form.Item>
             : null
           }
