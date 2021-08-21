@@ -1,0 +1,76 @@
+import * as React from 'react';
+import { TextFormat } from './text-format';
+import { Table, Typography } from 'antd';
+import { nanToZero } from 'app/shared/util/nanToZero';
+
+export interface ICacheMetricsProps {
+    cacheMetrics: any;
+    twoDigitAfterPointFormat: string;
+}
+
+const { Title } = Typography;
+
+export class CacheMetrics extends React.Component<ICacheMetricsProps> {
+    render() {
+        const { cacheMetrics, twoDigitAfterPointFormat } = this.props;
+
+        const columns = [
+            {
+                title: 'Cache Name',
+                key: 'cacheName',
+                dataIndex: 'cacheName',
+            },
+            {
+                title: 'Cache Hits',
+                key: 'cacheHits',
+                dataIndex: 'cacheHits',
+            },
+            {
+                title: 'Cache Misses',
+                key: 'cacheMisses',
+                dataIndex: 'cacheMisses',
+            },
+            {
+                title: 'Cache Gets',
+                key: 'cacheGets',
+                dataIndex: 'cacheGets',
+            },
+            {
+                title: 'Cache Hit %',
+                key: 'cacheHitPer',
+                dataIndex: 'cacheHitPer',
+                render: text => <TextFormat value={text} type="number" format={twoDigitAfterPointFormat} />,
+            },
+            {
+                title: 'Cache Miss %',
+                key: 'cacheMiss',
+                dataIndex: 'cacheMiss',
+                render: text => <TextFormat value={text} type="number" format={twoDigitAfterPointFormat} />,
+            },
+        ];
+
+        const dataSource = Object.keys(cacheMetrics).map(key => {
+            return {
+                cacheName: key,
+                cacheHits: cacheMetrics[key]['cache.gets.hit'],
+                cacheMisses: cacheMetrics[key]['cache.gets.miss'],
+                cacheGets: cacheMetrics[key]['cache.gets.miss'] + cacheMetrics[key]['cache.gets.hit'],
+                cacheHitPer: nanToZero(
+                    (100 * cacheMetrics[key]['cache.gets.hit']) /
+                        (cacheMetrics[key]['cache.gets.hit'] + cacheMetrics[key]['cache.gets.miss'])
+                ),
+                cacheMiss: nanToZero(
+                    (100 * cacheMetrics[key]['cache.gets.miss']) /
+                        (cacheMetrics[key]['cache.gets.hit'] + cacheMetrics[key]['cache.gets.miss'])
+                ),
+            };
+        });
+
+        return (
+            <div>
+                <Title>Cache statistics</Title>
+                <Table columns={columns} dataSource={dataSource} />
+            </div>
+        );
+    }
+}

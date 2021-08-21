@@ -1,0 +1,243 @@
+import React, { useState, useEffect } from 'react';
+import { Link, RouteComponentProps } from 'react-router-dom';
+import { Button, Table, Typography, Tag, Pagination, Space } from 'antd';
+import { Translate, TextFormat, getSortState } from 'react-jhipster';
+
+import { APP_DATE_FORMAT } from 'app/config/constants';
+import { ASC, DESC, ITEMS_PER_PAGE, SORT } from 'app/shared/util/pagination.constants';
+import { overridePaginationStateWithQueryParams } from 'app/shared/util/entity-utils';
+import { getUsersAsAdmin, updateUser } from './user-management.reducer';
+import { useAppDispatch, useAppSelector } from 'app/config/store';
+import dayjs from 'dayjs';
+
+const { Title } = Typography;
+export const UserManagement = (props: RouteComponentProps<any>) => {
+  const dispatch = useAppDispatch();
+
+  const [pagination, setPagination] = useState(
+    overridePaginationStateWithQueryParams(getSortState(props.location, ITEMS_PER_PAGE, 'id'), props.location.search)
+  );
+
+  const getUsersFromProps = () => {
+    dispatch(
+      getUsersAsAdmin({
+        page: pagination.activePage - 1,
+        size: pagination.itemsPerPage,
+        sort: `${pagination.sort},${pagination.order}`,
+      })
+    );
+    const endURL = `?page=${pagination.activePage}&sort=${pagination.sort},${pagination.order}`;
+    if (props.location.search !== endURL) {
+      props.history.push(`${props.location.pathname}${endURL}`);
+    }
+  };
+
+  useEffect(() => {
+    getUsersFromProps();
+  }, [pagination.activePage, pagination.order, pagination.sort]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(props.location.search);
+    const page = params.get('page');
+    const sortParam = params.get(SORT);
+    if (page && sortParam) {
+      const sortSplit = sortParam.split(',');
+      setPagination({
+        ...pagination,
+        activePage: +page,
+        sort: sortSplit[0],
+        order: sortSplit[1],
+      });
+    }
+  }, [props.location.search]);
+
+  const sort = p => () =>
+    setPagination({
+      ...pagination,
+      order: p.order === 'ascend' ? DESC : ASC,
+      sort: p.field,
+    });
+
+  const handlePagination = currentPage =>
+    setPagination({
+      ...pagination,
+      activePage: currentPage,
+    });
+
+  const handleSyncList = () => {
+    getUsersFromProps();
+  };
+
+  const toggleActive = user => () =>
+    dispatch(
+      updateUser({
+        ...user,
+        activated: !user.activated,
+      })
+    );
+
+  const { match } = props;
+  const account = useAppSelector(state => state.authentication.account);
+  const users = useAppSelector(state => state.userManagement.users);
+  const totalItems = useAppSelector(state => state.userManagement.totalItems);
+  const loading = useAppSelector(state => state.userManagement.loading);
+
+  const columns = [
+    {
+      title: <Translate contentKey="global.field.id">ID</Translate>,
+      key: 'id',
+      dataIndex: 'id',
+      sorter: (a, b) => a.id - b.id,
+    },
+    {
+      title: <Translate contentKey="userManagement.login">Login</Translate>,
+      key: 'login',
+      dataIndex: 'login',
+      sorter: (a, b) => a.login.localeCompare(b.login),
+    },
+    {
+      title: <Translate contentKey="userManagement.email">Email</Translate>,
+      key: 'email',
+      dataIndex: 'email',
+      sorter: (a, b) => a.email.localeCompare(b.email),
+    },
+<%_ if (enableTranslation) { _%>
+
+    {
+      title: <Translate contentKey="userManagement.langKey">Lang key</Translate>,
+      key: 'langKey',
+      dataIndex: 'langKey',
+    },
+<%_ } _%>
+
+    {
+      title: <Translate contentKey="userManagement.profiles">Profiles</Translate>,
+      key: 'profiles',
+      dataIndex: 'profiles',
+      render: (record, index) => (
+        <>
+          {record?.map((authority, j) => (
+            <Tag key={`user-auth-${index}-${j}`} color="red">
+              {authority}
+            </Tag>
+          ))}
+        </>
+      ),
+    },
+<%_ if (!databaseTypeCassandra) { _%>
+
+    {
+      title: <Translate contentKey="userManagement.createdDate">Created Date</Translate>,
+      key: 'createdDate',
+      dataIndex: 'createdDate',
+      render: text => <TextFormat value={text} type="date" format={APP_DATE_FORMAT} blankOnInvalid />,
+      sorter: (a, b) => dayjs(a.createdDate).unix() - dayjs(b.createdDate).unix(),
+    },
+    {
+      title: <Translate contentKey="userManagement.lastModifiedBy">Last Modified By</Translate>,
+      key: 'lastModifiedBy',
+      dataIndex: 'lastModifiedBy',
+    },
+    {
+      title: <Translate contentKey="userManagement.login">Last Modified Date</Translate>,
+      key: 'lastModifiedDate',
+      dataIndex: 'lastModifiedDate',
+      render: text => <TextFormat value={text} type="date" format={APP_DATE_FORMAT} blankOnInvalid />,
+      sorter: (a, b) => dayjs(a.lastModifiedDate).unix() - dayjs(b.lastModifiedDate).unix(),
+    },
+<%_ } _%>
+
+    {
+      title: '',
+      key: 'status',
+      dataIndex: 'status',
+      render: record =>
+        record?.activated ? (
+          <Button type="primary" onClick={toggleActive(record)}>
+            <Translate contentKey="userManagement.activated">Activated</Translate>
+          </Button>
+        ) : (
+          <Button type="primary" danger onClick={toggleActive(record)}>
+            <Translate contentKey="userManagement.deactivated">Deactivated</Translate>
+          </Button>
+        ),
+    },
+    {
+      title: 'Action',
+      key: 'action',
+      render: record => (
+        <Space>
+          <Button type="default">
+            <Link to={`${match.url}/${record.login}`}>
+              <Translate contentKey="entity.action.view">View</Translate>
+            </Link>
+          </Button>
+          <Button type="primary">
+            <Link to={`${match.url}/${record.login}/edit`}>
+              <Translate contentKey="entity.action.edit">Edit</Translate>
+            </Link>
+          </Button>
+          <Button type="primary" danger disabled={account.login === record.login}>
+            <Link to={`${match.url}/${record.login}/delete`}>
+              <Translate contentKey="entity.action.delete">Delete</Translate>
+            </Link>
+          </Button>
+        </Space>
+      ),
+    },
+  ];
+
+  const dataSource = users.map((user, index) => {
+    return {
+      id: index,
+      login: user.login,
+      email: user.email,
+      status: user.activated,
+<%_ if (enableTranslation) { _%>
+
+      langKey: user.langKey,
+<%_ } _%>
+
+      profiles: user.authorities,
+<%_ if (!databaseTypeCassandra) { _%>
+
+      createdDate: user.createdDate,
+      lastModifiedBy: user.lastModifiedBy,
+      lastModifiedDate: user.lastModifiedDate,
+<%_ } _%>
+
+    };
+  });
+
+  return (
+    <div>
+      <Title id="user-management-page-heading" data-cy="userManagementPageHeading">
+        <Translate contentKey="userManagement.home.title">Users</Translate>
+        <div className="d-flex justify-content-end">
+          <Button onClick={handleSyncList} disabled={loading}>
+            <Translate contentKey="userManagement.home.refreshListLabel">Refresh List</Translate>
+          </Button>
+          <Button type="primary" style={{ marginLeft: 10 }}>
+            <Link to={`${match.url}/new`}>
+              <Translate contentKey="userManagement.home.createLabel">Create a new user</Translate>
+            </Link>
+          </Button>
+        </div>
+      </Title>
+      <Table columns={columns} dataSource={dataSource} rowKey={'id'} pagination={false} />
+<%_ if (!databaseTypeCassandra) { _%>
+
+      <Pagination
+        onChange={page => handlePagination(page)}
+        defaultCurrent={1}
+        total={totalItems}
+        current={pagination.activePage}
+        pageSize={pagination.itemsPerPage}
+      />
+<%_ } _%>
+
+    </div>
+  );
+};
+
+export default UserManagement;

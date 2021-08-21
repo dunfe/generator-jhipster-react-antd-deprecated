@@ -1,0 +1,133 @@
+import * as React from 'react';
+import ThreadsModal from './threadModal';
+import { Progress, Button, Typography } from 'antd';
+
+export interface IJvmThreadsProps {
+    jvmThreads: any;
+    wholeNumberFormat: string;
+}
+
+export interface IJvmThreadsState {
+    showModal: boolean;
+    threadStats: {
+        threadDumpAll: number;
+        threadDumpRunnable: number;
+        threadDumpTimedWaiting: number;
+        threadDumpWaiting: number;
+        threadDumpBlocked: number;
+    };
+}
+
+const { Title, Text } = Typography;
+
+export class JvmThreads extends React.Component<IJvmThreadsProps, IJvmThreadsState> {
+    state: IJvmThreadsState = {
+        showModal: false,
+        threadStats: {
+            threadDumpAll: 0,
+            threadDumpRunnable: 0,
+            threadDumpTimedWaiting: 0,
+            threadDumpWaiting: 0,
+            threadDumpBlocked: 0,
+        },
+    };
+
+    countThreadByState() {
+        if (this.props.jvmThreads.threads) {
+            const threadStats = {
+                threadDumpAll: 0,
+                threadDumpRunnable: 0,
+                threadDumpTimedWaiting: 0,
+                threadDumpWaiting: 0,
+                threadDumpBlocked: 0,
+            };
+
+            this.props.jvmThreads.threads.forEach(thread => {
+                if (thread.threadState === 'RUNNABLE') {
+                    threadStats.threadDumpRunnable += 1;
+                } else if (thread.threadState === 'WAITING') {
+                    threadStats.threadDumpWaiting += 1;
+                } else if (thread.threadState === 'TIMED_WAITING') {
+                    threadStats.threadDumpTimedWaiting += 1;
+                } else if (thread.threadState === 'BLOCKED') {
+                    threadStats.threadDumpBlocked += 1;
+                }
+            });
+
+            threadStats.threadDumpAll =
+                threadStats.threadDumpRunnable +
+                threadStats.threadDumpWaiting +
+                threadStats.threadDumpTimedWaiting +
+                threadStats.threadDumpBlocked;
+
+            this.setState({ threadStats });
+        }
+    }
+
+    componentDidMount() {
+        if (this.props.jvmThreads.threads) {
+            this.countThreadByState();
+        }
+    }
+
+    componentDidUpdate(prevProps) {
+        if (this.props.jvmThreads.threads && this.props.jvmThreads.threads !== prevProps.jvmThreads.threads) {
+            this.countThreadByState();
+        }
+    }
+
+    openModal = () => {
+        this.setState({
+            showModal: true,
+        });
+    };
+
+    handleClose = e => {
+        this.setState({
+            showModal: false,
+        });
+    };
+
+    renderModal = () => <ThreadsModal handleClose={this.handleClose} showModal={this.state.showModal} threadDump={this.props.jvmThreads} />;
+
+    render() {
+        const { threadStats } = this.state;
+        return (
+            <div>
+                <Title>Threads {`(Total: ${threadStats.threadDumpAll})`}</Title>
+                <Text>Runnable {threadStats.threadDumpRunnable}</Text>
+                <Progress
+                    strokeColor={'green'}
+                    status={'active'}
+                    percent={(threadStats.threadDumpRunnable * 100) / threadStats.threadDumpAll}
+                    showInfo={false}
+                />
+                <Text>Timed Waiting ({threadStats.threadDumpTimedWaiting})</Text>
+                <Progress
+                    strokeColor={'orange'}
+                    percent={(threadStats.threadDumpTimedWaiting * 100) / threadStats.threadDumpAll}
+                    showInfo={false}
+                    status="active"
+                />
+                <Text>Waiting ({threadStats.threadDumpWaiting})</Text>
+                <Progress
+                    strokeColor={'orange'}
+                    status={'active'}
+                    percent={(threadStats.threadDumpWaiting * 100) / threadStats.threadDumpAll}
+                    showInfo={false}
+                />
+                <Text>Blocked ({threadStats.threadDumpBlocked})</Text>
+                <Progress
+                    strokeColor={'red'}
+                    status={'active'}
+                    percent={(threadStats.threadDumpBlocked * 100) / threadStats.threadDumpAll}
+                    showInfo={false}
+                />
+                {this.renderModal()}
+                <Button type="primary" className="hand" onClick={this.openModal}>
+                    Expand
+                </Button>
+            </div>
+        );
+    }
+}

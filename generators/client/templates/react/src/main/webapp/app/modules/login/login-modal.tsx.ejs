@@ -1,0 +1,93 @@
+import React from 'react';
+import { Translate, translate } from 'react-jhipster';
+import { Modal, Form, Input, Checkbox, notification, Button } from 'antd';
+import { UserOutlined, LockOutlined } from '@ant-design/icons';
+import { Link } from 'react-router-dom';
+
+export interface ILoginModalProps {
+  showModal: boolean;
+  loginError: boolean;
+  handleLogin: (username: string, password: string, rememberMe: boolean) => void;
+  handleClose: () => void;
+}
+
+const { useEffect } = React;
+
+const LoginModal = (props: ILoginModalProps) => {
+  const login = ({ username, password, remember }) => {
+    props.handleLogin(username, password, remember);
+  };
+
+  const [form] = Form.useForm();
+
+  const { loginError, handleClose } = props;
+
+  const handleOk = () => {
+    form
+      .validateFields()
+      .then(values => {
+        form.resetFields();
+        login(values);
+      })
+      .catch(info =>
+        notification.error({
+          message: 'Validate failed: ',
+          description: info,
+        })
+      );
+  };
+
+  useEffect(() => {
+    if (loginError) {
+      notification.open({
+        message: <strong>Failed to sign in!</strong>,
+        description: (
+          <Translate contentKey="login.messages.error.authentication">
+            <strong>Failed to sign in!</strong> Please check your credentials and try again.
+          </Translate>
+        ),
+      });
+    }
+  }, [loginError]);
+
+  return (
+    <Modal
+      visible={props.showModal}
+      onCancel={handleClose}
+      key="login-page"
+      title={<Translate contentKey="login.title">Sign in</Translate>}
+      footer={[
+        <Button key="cancel" onClick={handleClose} tabIndex={1}>
+          <Translate contentKey="entity.action.cancel">Cancel</Translate>
+        </Button>,
+        <Button key="login" type="primary" onClick={handleOk} data-cy="submit">
+          <Translate contentKey="login.form.button">Sign in</Translate>
+        </Button>,
+      ]}
+    >
+      <Form form={form}>
+        <Form.Item name="username" rules={[{ required: true, message: 'Please input your Username!' }]}>
+          <Input prefix={<UserOutlined className="site-form-item-icon" />} placeholder={translate('global.form.username.placeholder')} />
+        </Form.Item>
+        <Form.Item name="password" rules={[{ required: true, message: 'Please input your Password!' }]}>
+          <Input
+            prefix={<LockOutlined className="site-form-item-icon" />}
+            type="password"
+            placeholder={translate('login.form.password.placeholder')}
+          />
+        </Form.Item>
+        <Form.Item name="remember" valuePropName="checked" noStyle>
+          <Checkbox>{translate('login.form.rememberme')}</Checkbox>
+        </Form.Item>
+<%_ if (!skipUserManagement) { _%>
+        <Form.Item noStyle>
+          <Link to="/account/reset/request">{translate('login.password.forgot')}</Link>
+        </Form.Item>
+<%_ } _%>
+
+      </Form>
+    </Modal>
+  );
+};
+
+export default LoginModal;

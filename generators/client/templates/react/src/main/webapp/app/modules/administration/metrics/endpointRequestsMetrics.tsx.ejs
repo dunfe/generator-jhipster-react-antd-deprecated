@@ -1,0 +1,61 @@
+import * as React from 'react';
+import { TextFormat } from './text-format';
+import { Table, Typography } from 'antd';
+
+export interface IEndpointsRequestsMetricsProps {
+    endpointsRequestsMetrics: any;
+    wholeNumberFormat: string;
+}
+
+const { Title } = Typography;
+
+export const EndpointsRequestsMetrics = (props: IEndpointsRequestsMetricsProps) => {
+    const { endpointsRequestsMetrics, wholeNumberFormat } = props;
+
+    const columns = [
+        {
+            title: 'Method',
+            key: 'method',
+            dataIndex: 'method',
+        },
+        {
+            title: 'Endpoint Url',
+            dataIndex: 'key',
+            key: 'key',
+        },
+        {
+            title: 'Count',
+            dataIndex: 'count',
+            key: 'count',
+        },
+        {
+            title: 'Mean',
+            dataIndex: 'mean',
+            key: 'mean',
+            render: text => <TextFormat value={text} type="number" format={wholeNumberFormat} />,
+        },
+    ];
+
+    let dataSource = [];
+
+    Object.entries(endpointsRequestsMetrics).map(([key, entry]) => {
+        Object.entries(entry).map(([method, methodValue]) => {
+            dataSource = [
+                ...dataSource,
+                {
+                    method,
+                    key,
+                    count: methodValue.count,
+                    mean: methodValue.mean,
+                },
+            ];
+        });
+    });
+
+    return (
+        <div>
+            <Title>Endpoints requests (time in millisecond)</Title>
+            <Table columns={columns} dataSource={dataSource} />
+        </div>
+    );
+};

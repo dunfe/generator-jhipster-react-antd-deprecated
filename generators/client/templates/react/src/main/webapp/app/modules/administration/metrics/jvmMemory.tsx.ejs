@@ -1,0 +1,47 @@
+import * as React from 'react';
+import { TextFormat } from './text-format';
+import { Typography, Progress } from 'antd';
+import { progressUtils } from 'app/shared/util/progress-utils';
+
+export interface IJvmMemoryProps {
+    jvmMetrics: any;
+    wholeNumberFormat: string;
+}
+
+const { Title } = Typography;
+
+export class JvmMemory extends React.Component<IJvmMemoryProps> {
+    render() {
+        const { jvmMetrics, wholeNumberFormat } = this.props;
+        return (
+            <div>
+                <Title>Memory</Title>
+                {Object.keys(jvmMetrics).map((key, index) => (
+                    <div key={index}>
+                        {jvmMetrics[key].max !== -1 ? (
+                            <span>
+                                <span>{key}</span> (
+                                <TextFormat value={jvmMetrics[key].used / 1048576} type="number" format={wholeNumberFormat} />M /{' '}
+                                <TextFormat value={jvmMetrics[key].max / 1048576} type="number" format={wholeNumberFormat} />
+                                M)
+                            </span>
+                        ) : (
+                            <span>
+                                <span>{key}</span>{' '}
+                                <TextFormat value={jvmMetrics[key].used / 1048576} type="number" format={wholeNumberFormat} />M
+                            </span>
+                        )}
+                        <div>
+                            Committed : <TextFormat value={jvmMetrics[key].committed / 1048576} type="number" format={wholeNumberFormat} />M
+                        </div>
+                        {jvmMetrics[key].max !== -1 ? (
+                            <Progress status="active" percent={progressUtils(jvmMetrics[key])} showInfo={false} strokeColor={'green'} />
+                        ) : (
+                            ''
+                        )}
+                    </div>
+                ))}
+            </div>
+        );
+    }
+}

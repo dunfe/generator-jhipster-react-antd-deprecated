@@ -1,0 +1,94 @@
+<%#
+ Copyright 2013-2021 the original author or authors from the JHipster project.
+
+ This file is part of the JHipster project, see https://www.jhipster.tech/
+ for more information.
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+      https://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-%>
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { Menu } from 'antd';
+import { Translate } from 'react-jhipster';
+import { ExceptionOutlined, FileDoneOutlined, HeartOutlined, PieChartOutlined, SettingOutlined, UserOutlined } from '@ant-design/icons';
+
+const adminMenuItems = [
+<%_ if (applicationTypeGateway && serviceDiscoveryType) { _%>
+  <Menu.Item key="user-management" icon={<UserOutlined />}>
+  <Link to="/admin/gateway">
+      <Translate contentKey="global.menu.admin.gateway">Gateway</Translate>
+  </Link>
+</Menu.Item>,
+<%_ } _%>
+<%_ if (!skipUserManagement) { _%>
+  <Menu.Item key="user-management" icon={<UserOutlined />}>
+  <Link to="/admin/user-management">
+      <Translate contentKey="global.menu.admin.userManagement">User management</Translate>
+  </Link>
+</Menu.Item>,
+<%_ } _%>
+<%_ if (communicationSpringWebsocket) { _%>
+  <Menu.Item key="user-management" icon={<UserOutlined />}>
+  <Link to="/admin/tracker">
+      <Translate contentKey="global.menu.admin.tracker">User tracker</Translate>
+  </Link>
+</Menu.Item>,
+<%_ } _%>
+<%_ if (withAdminUi) { _%>
+  <Menu.Item key="metrics" icon={<PieChartOutlined />}>
+  <Link to="/admin/metrics">
+      <Translate contentKey="global.menu.admin.metrics">Metrics</Translate>
+  </Link>
+</Menu.Item>,
+<Menu.Item key="health" icon={<HeartOutlined />}>
+  <Link to="/admin/health">
+      <Translate contentKey="global.menu.admin.health">Health</Translate>
+  </Link>
+</Menu.Item>,
+<Menu.Item key="configuration" icon={<SettingOutlined />}>
+  <Link to="/admin/configuration">
+      <Translate contentKey="global.menu.admin.configuration">Configuration</Translate>
+  </Link>
+</Menu.Item>,
+<Menu.Item key="logs" icon={<ExceptionOutlined />}>
+  <Link to="/admin/logs">
+      <Translate contentKey="global.menu.admin.logs">Logs</Translate>
+  </Link>
+</Menu.Item>,
+
+<%_ } _%>
+<% if (devDatabaseTypeH2Any) { %>
+  <Menu.Item key="docs" icon={<FileDoneOutlined />}>
+  <Link to="<% if (reactive) { %>http://localhost:8092/<% } else { %>./h2-console/<% } %>">
+      <Translate contentKey="global.menu.admin.database">Database</Translate>
+  </Link>
+</Menu.Item>
+<%_ } _%>
+  ];
+
+const openAPIItem = (
+  <Menu.Item key="docs" icon={<FileDoneOutlined />}>
+  <Link to="/admin/docs">
+      <Translate contentKey="global.menu.admin.apidocs">API</Translate>
+  </Link>
+</Menu.Item>
+);
+
+export const AdminMenu = (showOpenAPI) => {
+      if (showOpenAPI) {
+        return [...adminMenuItems, openAPIItem];
+      }
+    return adminMenuItems;
+};
+
+export default AdminMenu;

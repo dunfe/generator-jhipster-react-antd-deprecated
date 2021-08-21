@@ -1,0 +1,49 @@
+import React, { useEffect } from 'react';
+import { RouteComponentProps } from 'react-router-dom';
+import { Modal, Button } from 'antd';
+import { Translate } from 'react-jhipster';
+
+import { getUser, deleteUser } from './user-management.reducer';
+import { useAppDispatch, useAppSelector } from 'app/config/store';
+
+export const UserManagementDeleteDialog = (props: RouteComponentProps<{ login: string }>) => {
+    const dispatch = useAppDispatch();
+
+    useEffect(() => {
+        dispatch(getUser(props.match.params.login));
+    }, []);
+
+    const handleClose = event => {
+        event.stopPropagation();
+        props.history.push('/admin/user-management');
+    };
+
+    const user = useAppSelector(state => state.userManagement.user);
+
+    const confirmDelete = event => {
+        dispatch(deleteUser(user.login));
+        handleClose(event);
+    };
+
+    return (
+        <Modal
+            footer={[
+                <Button key="cancel" type="default" onClick={handleClose}>
+                    <Translate contentKey="entity.action.cancel">Cancel</Translate>
+                </Button>,
+                <Button key="delete" type="primary" danger onClick={confirmDelete}>
+                    <Translate contentKey="entity.action.delete">Delete</Translate>
+                </Button>,
+            ]}
+            visible={true}
+            onCancel={handleClose}
+            title={<Translate contentKey="entity.delete.title">Confirm delete operation</Translate>}
+        >
+            <Translate contentKey="userManagement.delete.question" interpolate={{ login: user.login }}>
+                Are you sure you want to delete this User?
+            </Translate>
+        </Modal>
+    );
+};
+
+export default UserManagementDeleteDialog;

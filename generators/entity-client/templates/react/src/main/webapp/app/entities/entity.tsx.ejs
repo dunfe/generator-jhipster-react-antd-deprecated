@@ -1,0 +1,492 @@
+<%#
+ Copyright 2013-2021 the original author or authors from the JHipster project.
+
+ This file is part of the JHipster project, see https://www.jhipster.tech/
+ for more information.
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+      https://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-%>
+import React, { useState, useEffect } from 'react';
+<%_ if (paginationInfiniteScroll) { _%>
+import InfiniteScroll from 'react-infinite-scroller';
+<%_ } _%>
+import dayjs from 'dayjs';
+import { Link, RouteComponentProps } from 'react-router-dom';
+import { Button, <% if (searchEngine) { %>Input, Form,<% } %> Table, Card, Pagination, Space } from 'antd';
+import {
+  <%_ if (blobFields.length > 0) { _%>
+    <%_ if (fieldsContainBlobOrImage) { _%>
+  openFile,
+    <%_ } _%>
+  byteSize,
+  <%_ } _%>
+  Translate<% if (searchEngine) { %>, translate<% } %>
+  <% if (fieldsContainDate) { %>, TextFormat<% } %>
+  <%_ if (!paginationNo) { _%>
+  , getSortState
+  <%_ if (paginationPagination) { _%>
+  , JhiPagination, JhiItemCount
+  <%_ }
+  } _%>
+} from 'react-jhipster';
+
+<%_ if (fieldsContainDuration) { _%>
+import { DurationFormat } from 'app/shared/DurationFormat';
+<%_ } _%>
+
+import {
+<%_ if (searchEngine) { _%>
+  searchEntities,
+<%_ } _%>
+  getEntities,
+<%_ if (paginationInfiniteScroll) { _%>
+  reset,
+<%_ } _%>
+} from './<%= entityFileName %>.reducer';
+import { I<%= entityReactName %> } from 'app/shared/model/<%= entityModelFileName %>.model';
+import { APP_DATE_FORMAT, APP_LOCAL_DATE_FORMAT } from 'app/config/constants';
+<%_ if (!paginationNo) { _%>
+import { ASC, DESC, ITEMS_PER_PAGE, SORT } from 'app/shared/util/pagination.constants';
+import { overridePaginationStateWithQueryParams } from 'app/shared/util/entity-utils';
+<%_ } _%>
+import { useAppDispatch, useAppSelector } from 'app/config/store';
+
+<%_ if (searchEngine) { _%>
+const {Search} = Input;
+<%_ } _%>
+export const <%= entityReactName %> = (props: RouteComponentProps<{url: string}>) => {
+  const dispatch = useAppDispatch();
+
+<%_ if (searchEngine) { _%>
+  const [search, setSearch] = useState('');
+<%_ } _%>
+<%_ if (!paginationNo) { _%>
+  const [paginationState, setPaginationState] = useState(overridePaginationStateWithQueryParams(getSortState(props.location, ITEMS_PER_PAGE, '<%= primaryKey.name %>'), props.location.search));
+<%_ } _%>
+<%_ if (paginationInfiniteScroll) { _%>
+  const [sorting, setSorting] = useState(false);
+<%_ } _%>
+
+  const <%= entityInstance %>List = useAppSelector(state => state.<%= entityInstance %>.entities);
+  const loading = useAppSelector(state => state.<%= entityInstance %>.loading);
+  <%_ if (!paginationNo) { _%>
+  const totalItems = useAppSelector(state => state.<%= entityInstance %>.totalItems);
+  <%_ } _%>
+  <%_ if (paginationInfiniteScroll) { _%>
+  const links = useAppSelector(state => state.<%= entityInstance %>.links);
+  const entity = useAppSelector(state => state.<%= entityInstance %>.entity);
+  const updateSuccess = useAppSelector(state => state.<%= entityInstance %>.updateSuccess);
+  <%_ } _%>
+
+<%_ if (paginationPagination || paginationInfiniteScroll || !paginationNo && !paginationInfiniteScroll) { _%>
+  const getAllEntities = () => {
+  <%_ if (searchEngine) { _%>
+    if (search) {
+      dispatch(
+        searchEntities({
+          query: search,
+          page: paginationState.activePage - 1,
+          size: paginationState.itemsPerPage,
+          sort: `${paginationState.sort},${paginationState.order}`
+        })
+      );
+    } else {
+      dispatch(
+        getEntities({
+          page: paginationState.activePage - 1,
+          size: paginationState.itemsPerPage,
+          sort: `${paginationState.sort},${paginationState.order}`,
+        })
+      );
+    }
+  <%_ } else { _%>
+      dispatch(
+        getEntities({
+          page: paginationState.activePage - 1,
+          size: paginationState.itemsPerPage,
+          sort: `${paginationState.sort},${paginationState.order}`,
+        })
+      );
+  <%_ } _%>
+  };
+<%_ } _%>
+
+<%_ if (paginationInfiniteScroll) { _%>
+  const resetAll = () => {
+    dispatch(reset());
+    setPaginationState({
+      ...paginationState,
+      activePage: 1
+    });
+    dispatch(getEntities({}));
+  };
+<%_ } _%>
+
+<%_ if (paginationNo || paginationInfiniteScroll) { _%>
+  useEffect(() => {
+  <%_ if (!paginationNo) { _%>
+    resetAll();
+  <%_ } else { _%>
+    dispatch(getEntities({}));
+  <%_ } _%>
+  }, []);
+<%_ } _%>
+
+<%_ if (searchEngine) { _%>
+  const startSearching = (e) => {
+    if (search) {
+  <%_ if (paginationInfiniteScroll) { _%>
+      dispatch(reset());
+  <%_ } _%>
+  <%_ if (!paginationNo) { _%>
+      setPaginationState({
+        ...paginationState,
+        activePage: 1
+      });
+      dispatch(
+        searchEntities({
+          query: search,
+          page: paginationState.activePage - 1,
+          size: paginationState.itemsPerPage,
+          sort: `${paginationState.sort},${paginationState.order}`,
+        })
+      );
+  <%_ } else { _%>
+      dispatch(searchEntities({query: search}));
+  <%_ } _%>
+    }
+    e.preventDefault();
+  };
+
+  const clear = () => {
+  <%_ if (paginationInfiniteScroll) { _%>
+    dispatch(reset());
+  <%_ } _%>
+    setSearch('');
+  <%_ if (!paginationNo) { _%>
+    setPaginationState({
+      ...paginationState,
+      activePage: 1
+    });
+  <%_ } _%>
+    dispatch(getEntities({}));
+  };
+
+  const handleSearch = event => setSearch(event.target.value);
+<%_ } _%>
+
+<%_ if (paginationInfiniteScroll) { _%>
+  useEffect(() => {
+    if (updateSuccess) {
+      resetAll();
+    }
+  }, [updateSuccess]);
+
+  useEffect(() => {
+    getAllEntities()
+  }, [paginationState.activePage]);
+
+  const handleLoadMore = () => {
+    if ((window as any).pageYOffset > 0) {
+      setPaginationState({
+        ...paginationState,
+        activePage: paginationState.activePage + 1
+      });
+    }
+  };
+<%_ } _%>
+
+<%_ if (!paginationNo) { _%>
+  <%_ if (paginationPagination) { _%>
+  const sortEntities = () => {
+    getAllEntities();
+    const endURL = `?page=${paginationState.activePage}&sort=${paginationState.sort},${paginationState.order}`;
+    if (props.location.search !== endURL) {
+      props.history.push(`${props.location.pathname}${endURL}`);
+    }
+  };
+  <%_ } _%>
+
+  useEffect(() => {
+  <%_ if (paginationInfiniteScroll) { _%>
+    if (sorting) {
+      getAllEntities();
+      setSorting(false);
+    }
+  <%_ } else { _%>
+    sortEntities();
+  <%_ } _%>
+  }, [<% if (paginationInfiniteScroll) { %>sorting<% } else { %>paginationState.activePage, paginationState.order, paginationState.sort<% } %><%_ if (searchEngine) { _%>, search<% } %>]);
+
+  <%_ if (paginationPagination) { _%>
+  useEffect(() => {
+    const params = new URLSearchParams(props.location.search);
+    const page = params.get('page');
+    const sort = params.get(SORT);
+    if (page && sort) {
+      const sortSplit = sort.split(',');
+      setPaginationState({
+        ...paginationState,
+        activePage: +page,
+        sort: sortSplit[0],
+        order: sortSplit[1]
+      });
+    }
+  }, [props.location.search]);
+  <%_ } _%>
+
+  const sort = p => () => {
+  <%_ if (paginationInfiniteScroll) { _%>
+    dispatch(reset());
+    setPaginationState({
+      ...paginationState,
+      activePage: 1,
+      order: paginationState.order === ASC ? DESC : ASC,
+      sort: p
+    });
+    setSorting(true);
+  <%_ } else { _%>
+    setPaginationState({
+      ...paginationState,
+      order: paginationState.order === ASC ? DESC : ASC,
+      sort: p
+    });
+  <%_ } _%>
+  };
+
+  <%_ if (paginationPagination) { _%>
+  const handlePagination = currentPage =>
+    setPaginationState({
+      ...paginationState,
+      activePage: currentPage
+    });
+  <%_ } _%>
+<%_ } _%>
+
+  const handleSyncList = () => {
+<%_ if (paginationNo) { _%>
+      dispatch(getEntities({}));
+<%_ } _%>
+<%_ if (paginationPagination) { _%>
+      sortEntities();
+<%_ } _%>
+<%_ if (paginationInfiniteScroll) { _%>
+      resetAll();
+<%_ } _%>
+  };
+
+  const { match } = props;
+
+  const columns = [
+    <%_ for (field of fields) { _%>
+        {
+            title: '<%= field.fieldNameHumanized %>',
+            key: '<%= field.fieldName %>',
+            dataIndex: '<%= field.fieldName %>',
+            <%_ if (field.fieldName !== primaryKey.name) { _%>
+                <%_ if (field.fieldTypeBoolean) { _%>
+                    render: () => <%= field.fieldTypeBoolean %>,
+                <%_ } else if (field.fieldTypeTimed) { _%>
+                    render: (text) => <TextFormat type="date" value={text} format={APP_DATE_FORMAT} />,
+                    sorter: (a, b) => dayjs(a.lastModifiedDate).unix() - dayjs(b.lastModifiedDate).unix(),
+                <%_ } else if (field.fieldTypeDuration) { _%>
+                    render: (text) =>  <DurationFormat value={text} />,
+                <%_ } else if (field.fieldTypeLocalDate) { _%>
+                    render: (text) =>  <TextFormat type="date" value={text} format={APP_LOCAL_DATE_FORMAT} />,
+                    sorter: (a, b) => dayjs(a.lastModifiedDate).unix() - dayjs(b.lastModifiedDate).unix(),
+                <%_ } else if (field.fieldIsEnum && enableTranslation) { _%>
+                  render: (text) => <Translate contentKey={`<%= frontendAppName %>.<%= field.fieldType %>.${text}`} />,
+                <%_ } else if (field.fieldTypeBinary) { _%>
+                    <%_ if (!field.blobContentTypeText) { _%>
+                        render: () => (
+                        <div>
+                            {<%= entityInstance %>.<%= field.fieldName %>ContentType ? (
+                            <a onClick={openFile(<%= entityInstance %>.<%= field.fieldName %>ContentType, <%= entityInstance %>.<%= field.fieldName %>)}>
+                                <%_ if (field.blobContentTypeImage) { _%>
+                                    <img src={`data:${<%= entityInstance %>.<%= field.fieldName %>ContentType};base64,${<%= entityInstance %>.<%= field.fieldName %>}`} style={{ maxHeight: '30px' }} />
+                                <%_ } else { _%>
+                                <Translate contentKey="entity.action.open">Open</Translate>
+                                <%_ } _%>
+                            </a>
+                            ) : null}
+                            <span>{<%= entityInstance %>.<%= field.fieldName %>ContentType}, {byteSize(<%= entityInstance %>.<%= field.fieldName %>)}</span>
+                        </div>
+                        ),
+                    <%_ } _%>
+                <%_ } else { _%>
+                    render: (text) => text,
+                    sort: (a, b) => a.<%= field.fieldName %> - b.<%= field.fieldName, %>
+                <%_ } _%>
+            <%_ } _%>
+        },
+    <%_ } _%>
+    <%_ for (relationship of relationships) {
+      const ownerSide = relationship.ownerSide;
+      const relationshipFieldName = relationship.relationshipFieldName;
+      const relationshipFieldNamePlural = relationship.relationshipFieldNamePlural;
+      const otherEntityPkName = relationship.otherEntity.primaryKey && relationship.otherEntity.primaryKey.name || 'id';
+      const otherEntityStateName = relationship.otherEntityStateName;
+      const otherEntityField = relationship.otherEntityField; _%>
+      <%_ if (relationship.relationshipManyToOne
+      || (relationship.relationshipOneToOne && ownerSide)
+      || (relationship.relationshipManyToMany && ownerSide && paginationNo)) { _%>
+          {
+              title: '<%= relationship.relationshipNameHumanized %>',
+              key: '<%= relationshipFieldName %>',
+              dataIndex: '<%= relationshipFieldName %>',
+              render: record => record ?
+              <%_ if (relationship.otherEntityUser) { _%>
+                  <%_ if (relationship.relationshipManyToMany) { _%>
+                                  record.map((val, j) =>
+                                            <span key={j}>
+                                              {val.<%= otherEntityField %>}{(j === record.length - 1) ? '' : ', '}
+                                            </span>
+                  <%_ } else { _%>
+                    record.login
+                  <%_ } _%>
+              <%_ } else { _%>
+                <%_ if (relationship.relationshipManyToMany) { _%>
+                  record.map((val, j) =>
+                                  <span key={j}>
+                                    <Link to={`<%= otherEntityStateName %>/${val.id}`}>{val.<%= otherEntityField %> ? val.<%= otherEntityField %> : val.id}</Link>
+                                    {(j === record.length - 1) ? '' : ', '}
+                                  </span>)
+                <%_ } else { _%>
+                                  <Link to={`<%= otherEntityStateName %>/${record.<%= otherEntityPkName %>}`}>
+                                    {record.<%= otherEntityField %>}
+                                  </Link>
+                <%_ } _%>
+             <%_ } _%> : ''
+          },
+      <%_ } _%>
+    <%_ } _%>
+    {
+      title: 'Action',
+      key: 'action',
+      render: (record) => <Space>
+                            <Button type="default">
+                              <Link to={`${match.url}/${record.<%= primaryKey.name %>}`}><Translate contentKey="entity.action.view">View</Translate></Link>
+                            </Button>
+                            <%_ if (!readOnly) { _%>
+                              <Button type="primary">
+                                <Link to={`${match.url}/${record.<%= primaryKey.name %>}/edit<%_ if (paginationPagination) { _%>?page=${paginationState.activePage}&sort=${paginationState.sort},${paginationState.order}<%_ } _%>`}><Translate contentKey="entity.action.edit">Edit</Translate></Link>
+                              </Button>
+                              <Button danger type="primary">
+                                <Link to={`${match.url}/${record.<%= primaryKey.name %>}/delete<%_ if (paginationPagination) { _%>?page=${paginationState.activePage}&sort=${paginationState.sort},${paginationState.order}<%_ } _%>`}><Translate contentKey="entity.action.delete">Delete</Translate></Link>
+                              </Button>
+                            <%_ } _%>
+                          </Space>
+    }
+  ]
+
+  const dataSource = <%= entityInstance %>List.map((<%= entityInstance %>) => {
+    return {
+      <%_ for (field of fields) { _%>
+        <%= field.fieldName %>: <%= entityInstance %>.<%= field.fieldName %>,
+      <%_ } _%>
+      <%_ for (relationship of relationships) {
+          const ownerSide = relationship.ownerSide;
+          const relationshipFieldName = relationship.relationshipFieldName;
+          const relationshipFieldNamePlural = relationship.relationshipFieldNamePlural;
+          const otherEntityPkName = relationship.otherEntity.primaryKey && relationship.otherEntity.primaryKey.name || 'id';
+          const otherEntityStateName = relationship.otherEntityStateName;
+          const otherEntityField = relationship.otherEntityField; _%>
+          <%_ if (relationship.relationshipManyToOne
+          || (relationship.relationshipOneToOne && ownerSide)
+          || (relationship.relationshipManyToMany && ownerSide && paginationNo)) { _%>
+            <%_ if (relationship.otherEntityUser) { _%>
+              <%_ if (relationship.relationshipManyToMany) { _%>
+                <%= relationshipFieldName %>: <%= entityInstance %>.<%= relationshipFieldNamePlural %>,
+              <%_ } else { _%>
+                <%= relationshipFieldName %>: <%= entityInstance + "." + relationshipFieldName %>,
+              <%_ } _%>
+            <%_ } else { _%>
+              <%_ if (relationship.relationshipManyToMany) { _%>
+                <%= relationshipFieldName %>: <%= entityInstance %>.<%= relationshipFieldNamePlural %>,
+              <%_ } else { _%>
+                <%= relationshipFieldName %>: <%= entityInstance + "." + relationshipFieldName %>,
+              <%_ } _%>
+            <%_ } _%>
+          <%_ } _%>
+        <%_ } _%>
+    }
+  });
+
+  return (
+    <Card>
+      <h2 id="<%= entityFileName %>-heading" data-cy="<%= entityClass %>Heading">
+        <Translate contentKey="<%= i18nKeyPrefix %>.home.title"><%= entityClassPluralHumanized %></Translate>
+        <div className="d-flex justify-content-end">
+          <Button className="mr-2" type="default" onClick={handleSyncList} disabled={loading}>
+            <Translate contentKey="<%= i18nKeyPrefix %>.home.refreshListLabel">Refresh List</Translate>
+          </Button>
+<%_ if (!readOnly) { _%>
+            <Button type="link">
+                <Link to={`${match.url}/new`}>
+                  <Translate contentKey="<%= i18nKeyPrefix %>.home.createLabel">
+                    Create new <%= entityClassHumanized %>
+                  </Translate>
+                </Link>
+            </Button>
+            <%_ } _%>
+        </div>
+      </h2>
+<%_ if (searchEngine) { _%>
+            <Search
+                    placeholder="input search text"
+                    allowClear
+                    enterButton="Search"
+                    size="large"
+                    onSearch={startSearching}
+            />
+<%_ } _%>
+      <div className="table-responsive">
+<%_ if (paginationInfiniteScroll) { _%>
+        <InfiniteScroll pageStart={paginationState.activePage}
+                        loadMore={handleLoadMore}
+                        hasMore={paginationState.activePage - 1 < links.next}
+                        loader={<div className="loader">Loading ...</div>}
+                        threshold={0}
+                        initialLoad={false}>
+<%_ } _%>
+        {
+          <%= entityInstance %>List && <%= entityInstance %>List.length > 0 ?(
+            <Table columns={columns} dataSource={dataSource} rowKey={'id'} scroll={{ x: true }}/>
+          ) : (
+              !loading && <div className="alert alert-warning">
+              <Translate contentKey="<%= i18nKeyPrefix %>.home.notFound">
+                No <%= entityClassPluralHumanized %> found
+              </Translate>
+            </div>
+          )
+        }
+<%_ if (paginationInfiniteScroll) { _%>
+        </InfiniteScroll>
+<%_ } _%>
+      </div>
+<%_ if (!databaseTypeCassandra) { _%>
+  <%_ if (paginationPagination) { _%>
+            <Pagination
+                onChange={page => handlePagination(page)}
+                defaultCurrent={1}
+                total={totalItems}
+                current={paginationState.activePage}
+                pageSize={paginationState.itemsPerPage}
+            />
+  <% } _%>
+<%_ } _%>
+    </Card>
+  );
+};
+
+export default <%= entityReactName %>;

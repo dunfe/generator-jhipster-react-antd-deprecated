@@ -1,0 +1,79 @@
+import * as React from 'react';
+import { TextFormat } from './text-format';
+import { Table, Typography } from 'antd';
+
+export interface IDatasourceMetricsProps {
+    datasourceMetrics: any;
+    twoDigitAfterPointFormat: string;
+}
+
+const { Title } = Typography;
+
+export class DatasourceMetrics extends React.Component<IDatasourceMetricsProps> {
+    render() {
+        const { datasourceMetrics, twoDigitAfterPointFormat } = this.props;
+
+        const columns = [
+            {
+                title: `Connection Pool Usage (active: ${datasourceMetrics.active.value},
+        min: ${datasourceMetrics.min.value},
+        max: ${datasourceMetrics.max.value}, idle:
+              ${datasourceMetrics.idle.value})`,
+                key: 'connection',
+                dataIndex: 'connection',
+            },
+            {
+                title: 'Count',
+                key: 'count',
+                dataIndex: 'count',
+            },
+            {
+                title: 'Mean',
+                key: 'mean',
+                dataIndex: 'Mean',
+                render: text => <TextFormat value={text} type="number" format={twoDigitAfterPointFormat} />,
+            },
+            {
+                title: 'Min',
+                key: 'min',
+                dataIndex: 'min',
+            },
+            {
+                title: 'Max',
+                key: 'max',
+                dataIndex: 'max',
+            },
+        ];
+
+        const dataSource = [
+            {
+                connection: 'Acquire',
+                count: datasourceMetrics.acquire.count,
+                mean: datasourceMetrics.acquire.mean,
+                min: datasourceMetrics.acquire['0'],
+                max: datasourceMetrics.acquire.max,
+            },
+            {
+                connection: 'Creation',
+                count: datasourceMetrics.creation.count,
+                mean: datasourceMetrics.creation.mean,
+                min: datasourceMetrics.creation['0'],
+                max: datasourceMetrics.creation.max,
+            },
+            {
+                connection: 'Usage',
+                count: datasourceMetrics.usage.count,
+                mean: datasourceMetrics.usage.mean,
+                min: datasourceMetrics.usage['0'],
+                max: datasourceMetrics.usage.max,
+            },
+        ];
+
+        return (
+            <div>
+                <Title>DataSource statistics (time in millisecond)</Title>
+                <Table columns={columns} dataSource={dataSource} />
+            </div>
+        );
+    }
+}

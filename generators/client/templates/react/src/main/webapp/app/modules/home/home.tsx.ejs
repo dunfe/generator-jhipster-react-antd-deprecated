@@ -1,0 +1,87 @@
+<%#
+ Copyright 2013-2021 the original author or authors from the JHipster project.
+
+ This file is part of the JHipster project, see https://www.jhipster.tech/
+ for more information.
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+      https://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-%>
+import './home.<%= styleSheetExt %>';
+
+import React, { useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { Translate } from 'react-jhipster';
+import { Row, Col, Alert } from 'antd';
+
+<%_ if (authenticationTypeOauth2) { _%>
+import { getLoginUrl, REDIRECT_URL } from 'app/shared/util/url-utils';
+<%_ } _%>
+import { useAppSelector } from 'app/config/store';
+
+export const Home = () => {
+  const account = useAppSelector(state => state.authentication.account);
+<%_ if (authenticationTypeOauth2) { _%>
+  useEffect(() => {
+    const redirectURL = localStorage.getItem(REDIRECT_URL);
+    if (redirectURL) {
+      localStorage.removeItem(REDIRECT_URL);
+      location.href = `${location.origin}${redirectURL}`;
+    }
+  });
+<%_ } _%>
+
+  return (
+    <Row>
+      <Col span="6" className="pad">
+        <span className="hipster rounded" />
+      </Col>
+      <Col span="18">
+        <h2><Translate contentKey="home.title">Welcome, <%= backendName %> Hipster!</Translate></h2>
+        <p className="lead"><Translate contentKey="home.subtitle">This is your homepage</Translate></p>
+        {
+          (account && account.login) ? (
+            <div>
+              <Alert type="success" message={<Translate contentKey="home.logged.message" interpolate={{ username: account.login }}>You are logged in as user {account.login}.</Translate>} />
+            </div>
+          ) : (
+            <div>
+              <Alert type="warning" message={        <>        <Translate contentKey="global.messages.info.authenticated.prefix">If you want to </Translate>
+                <% if (!enableTranslation) { %><span>&nbsp;</span><% } %>
+<%_ if (authenticationTypeOauth2) { _%>
+                <a href={getLoginUrl()} className="alert-link">
+                  <Translate contentKey="global.messages.info.authenticated.link">sign in</Translate>
+                </a>
+<%_ } else { _%>
+                <Link to="/login" className="alert-link"><Translate contentKey="global.messages.info.authenticated.link"> sign in</Translate></Link>
+<%_ } _%>
+                <Translate contentKey="global.messages.info.authenticated.suffix">, you can try the default accounts:
+                  <br />- Administrator (login=&quot;admin&quot; and password=&quot;admin&quot;)
+                  <br />- User (login=&quot;user&quot; and password=&quot;user&quot;).
+                </Translate> </>} />
+
+<%_ if (!skipUserManagement) { _%>
+              <Alert type="warning" message={<Translate contentKey="global.messages.info.register.noaccount">You do not have an account yet?</Translate>} action={[
+                <Link key='register' to="/account/register" className="alert-link"><Translate contentKey="global.messages.info.register.link">Register a new account</Translate></Link>
+                ]}/>
+<%_ } _%>
+            </div>
+          )
+        }
+        <h1>Import the home page here!</h1>
+      </Col>
+    </Row>
+  );
+};
+
+export default Home;
+

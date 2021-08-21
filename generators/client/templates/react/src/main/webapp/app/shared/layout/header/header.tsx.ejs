@@ -1,0 +1,19 @@
+import './header.scss';
+
+import React from 'react';
+import LoadingBar from 'react-redux-loading-bar';
+import { Layout } from 'antd';
+import { Brand } from './header-components';
+
+const Header = () => {
+    /* jhipster-needle-add-element-to-menu - JHipster will add new menu items here */
+
+    return (
+        <Layout.Header>
+            <LoadingBar className="loading-bar" />
+            <Brand />
+        </Layout.Header>
+    );
+};
+
+export default Header;

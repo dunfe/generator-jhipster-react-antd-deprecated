@@ -1,0 +1,62 @@
+{
+  "name": "generator-jhipster-react-antd",
+  "version": "0.0.0",
+  "description": "Jhipster stack use react and antd",
+  "keywords": [
+    "yeoman-generator",
+    "jhipster-blueprint",
+    "jhipster-7"
+  ],
+  "homepage": "https://github.com/dungreact/generator-jhipster-react-antd",
+  "author": {
+    "name": "Dung Nguyen",
+    "email": "dungreact@gmail.com",
+    "url": "dungnq.net"
+  },
+  "files": [
+    "generators"
+  ],
+  "main": "generators/app/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dungreact/generator-jhipster-react-antd.git"
+  },
+  "dependencies": {
+    "chalk": "2.4.1",
+    "generator-jhipster": "7.1.0"
+  },
+  "devDependencies": {
+    "chai": "4.3.0",
+    "ejs-lint": "1.1.0",
+    "eslint": "7.21.0",
+    "eslint-config-airbnb-base": "14.2.1",
+    "eslint-config-prettier": "8.1.0",
+    "eslint-plugin-chai-friendly": "^0.6.0",
+    "eslint-plugin-import": "2.22.1",
+    "eslint-plugin-mocha": "8.0.0",
+    "eslint-plugin-prettier": "3.3.1",
+    "fs-extra": "9.1.0",
+    "jsdoc": "3.6.6",
+    "mocha": "8.3.0",
+    "prettier": "",
+    "sinon": "9.2.4",
+    "yeoman-assert": "3.1.1",
+    "yeoman-test": "5.0.1"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "lint-fix": "npm run lint -- --fix",
+    "pretest": "npm run lint",
+    "test": "npm run test:unit -- test/*.spec.js",
+    "test:unit": "mocha --timeout 20000 --slow 0 --reporter spec",
+    "jsdoc": "jsdoc --configure jsdoc-conf.json",
+    "release": "git push && git push --tags && npm publish",
+    "release:patch": "npm version patch -a -m \"Update to %s\" && npm run release",
+    "release:minor": "npm version minor -a -m \"Update to %s\" && npm run release",
+    "release:major": "npm version major -a -m \"Update to %s\" && npm run release"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/dungreact/generator-jhipster-react-antd/issues"
+  }
+}

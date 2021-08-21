@@ -1,0 +1,123 @@
+import * as React from 'react';
+import { TextFormat } from './text-format';
+import { Col, Progress, Row, Table, Typography } from 'antd';
+
+export interface IGarbageCollectorMetricsProps {
+    garbageCollectorMetrics: any;
+    wholeNumberFormat: string;
+}
+
+const { Text, Title } = Typography;
+
+export class GarbageCollectorMetrics extends React.Component<IGarbageCollectorMetricsProps> {
+    render() {
+        const { garbageCollectorMetrics, wholeNumberFormat } = this.props;
+
+        const columns = [
+            {
+                title: '',
+                render: () => <Text>jvm.gc.pause</Text>,
+                key: 'jvm.gc.pause',
+            },
+            {
+                title: 'Count',
+                key: 'count',
+                dataIndex: 'count',
+            },
+            {
+                title: 'Mean',
+                key: 'mean',
+                dataIndex: 'mean',
+            },
+            {
+                title: 'Min',
+                key: 'min',
+                dataIndex: 'min',
+            },
+            {
+                title: 'Max',
+                key: 'max',
+                dataIndex: 'max',
+            },
+        ];
+
+        const dataSource = [garbageCollectorMetrics].map((item, index) => {
+            return {
+                id: index,
+                count: item.count,
+                mean: item.mean,
+                max: item.max,
+            };
+        });
+
+        return (
+            <div>
+                <Title>Garbage Collection</Title>
+                <Row gutter={16}>
+                    <Col md={8}>
+                        <Text>
+                            GC Live Data Size/GC Max Data Size (
+                            <TextFormat
+                                value={garbageCollectorMetrics['jvm.gc.live.data.size'] / 1048576}
+                                type={'number'}
+                                format={wholeNumberFormat}
+                            />
+                            M /{' '}
+                            <TextFormat
+                                value={garbageCollectorMetrics['jvm.gc.max.data.size'] / 1048576}
+                                type={'number'}
+                                format={wholeNumberFormat}
+                            />
+                            M)
+                        </Text>
+                        <Progress
+                            showInfo={false}
+                            status={'active'}
+                            strokeColor="green"
+                            percent={
+                                (100 * garbageCollectorMetrics['jvm.gc.live.data.size']) / garbageCollectorMetrics['jvm.gc.max.data.size']
+                            }
+                        />
+                    </Col>
+                    <Col md={8}>
+                        <Text>
+                            GC Memory Promoted/GC Memory Allocated (
+                            <TextFormat
+                                value={garbageCollectorMetrics['jvm.gc.memory.promoted'] / 1048576}
+                                type={'number'}
+                                format={wholeNumberFormat}
+                            />
+                            M /{' '}
+                            <TextFormat
+                                value={garbageCollectorMetrics['jvm.gc.memory.allocated'] / 1048576}
+                                type={'number'}
+                                format={wholeNumberFormat}
+                            />
+                            M)
+                        </Text>
+                        <Progress
+                            showInfo={false}
+                            status={'active'}
+                            strokeColor="green"
+                            percent={
+                                (100 * garbageCollectorMetrics['jvm.gc.memory.promoted']) /
+                                garbageCollectorMetrics['jvm.gc.memory.allocated']
+                            }
+                        />
+                    </Col>
+                    <Col md={8}>
+                        <Row className="system-metrics-row">
+                            <Col>Classes loaded</Col>
+                            <Col>{garbageCollectorMetrics.classesLoaded}</Col>
+                        </Row>
+                        <Row className="system-metrics-row">
+                            <Col>Classes unloaded</Col>
+                            <Col>{garbageCollectorMetrics.classesUnloaded}</Col>
+                        </Row>
+                    </Col>
+                </Row>
+                <Table columns={columns} dataSource={dataSource} rowKey={'id'} />
+            </div>
+        );
+    }
+}

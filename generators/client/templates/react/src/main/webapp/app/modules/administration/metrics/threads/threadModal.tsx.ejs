@@ -1,0 +1,210 @@
+import * as React from 'react';
+import { Modal, Tag, Badge, Divider, Input, Table, Row } from 'antd';
+
+export interface IThreadsModalProps {
+    showModal: boolean;
+    handleClose: (e) => void;
+    threadDump: any;
+}
+
+export interface IThreadsModalState {
+    badgeFilter: string;
+    searchFilter: string;
+}
+
+export class ThreadsModal extends React.Component<IThreadsModalProps, IThreadsModalState> {
+    state: IThreadsModalState = {
+        badgeFilter: '',
+        searchFilter: '',
+    };
+
+    computeFilteredList = () => {
+        const { badgeFilter, searchFilter } = this.state;
+        let filteredList = this.props.threadDump.threads;
+        if (badgeFilter !== '') {
+            filteredList = filteredList.filter(t => t.threadState === badgeFilter);
+        }
+        if (searchFilter !== '') {
+            filteredList = filteredList.filter(t => t.lockName && t.lockName.toLowerCase().includes(searchFilter.toLowerCase()));
+        }
+        return filteredList;
+    };
+
+    computeCounters = () => {
+        let threadDumpAll = 0;
+        let threadDumpRunnable = 0;
+        let threadDumpWaiting = 0;
+        let threadDumpTimedWaiting = 0;
+        let threadDumpBlocked = 0;
+
+        this.props.threadDump.threads.forEach(t => {
+            switch (t.threadState) {
+                case 'RUNNABLE':
+                    threadDumpRunnable++;
+                    break;
+                case 'WAITING':
+                    threadDumpWaiting++;
+                    break;
+                case 'TIMED_WAITING':
+                    threadDumpTimedWaiting++;
+                    break;
+                case 'BLOCKED':
+                    threadDumpBlocked++;
+                    break;
+                default:
+                    break;
+            }
+        });
+
+        threadDumpAll = threadDumpRunnable + threadDumpWaiting + threadDumpTimedWaiting + threadDumpBlocked;
+        return { threadDumpAll, threadDumpRunnable, threadDumpWaiting, threadDumpTimedWaiting, threadDumpBlocked };
+    };
+
+    getBadgeClass = threadState => {
+        if (threadState === 'RUNNABLE') {
+            return 'badge-success';
+        } else if (threadState === 'WAITING') {
+            return 'badge-info';
+        } else if (threadState === 'TIMED_WAITING') {
+            return 'badge-warning';
+        } else if (threadState === 'BLOCKED') {
+            return 'badge-danger';
+        }
+    };
+
+    updateBadgeFilter = badge => () => this.setState({ badgeFilter: badge });
+
+    updateSearchFilter = event => this.setState({ searchFilter: event.target.value });
+
+    render() {
+        const { showModal, handleClose, threadDump } = this.props;
+        let counters = {} as any;
+        let filteredList = null;
+        if (threadDump && threadDump.threads) {
+            counters = this.computeCounters();
+            filteredList = this.computeFilteredList();
+        }
+
+        const color = text => {
+            switch (text) {
+                case 'RUNNABLE':
+                    return 'blue';
+                case 'WAITING':
+                    return 'purple';
+                case 'TIMED_WAITING':
+                    return 'orange';
+                case 'BLOCKED':
+                    return 'red';
+                default:
+                    return 'blue';
+            }
+        };
+
+        const columns = [
+            {
+                title: 'State',
+                dataIndex: 'threadState',
+                key: 'threadState',
+                render: (text, index) => (
+                    <Tag key={index} color={color(text)}>
+                        {text}
+                    </Tag>
+                ),
+            },
+            {
+                title: 'Name',
+                dataIndex: 'threadName',
+                key: 'threadName',
+            },
+            {
+                title: 'ID',
+                dataIndex: 'threadId',
+                key: 'threadId',
+            },
+            {
+                title: 'Blocked Time',
+                dataIndex: 'blockedTime',
+                key: 'blockedTime',
+            },
+            {
+                title: 'Blocked Count',
+                dataIndex: 'blockedCount',
+                key: 'blockedCount',
+            },
+            {
+                title: 'Waited Time',
+                dataIndex: 'waitedTime',
+                key: 'waitedTime',
+            },
+            {
+                title: 'Waited Count',
+                dataIndex: 'waitedCount',
+                key: 'waitedCount',
+            },
+            {
+                title: 'Lock Name',
+                dataIndex: 'lockName',
+                key: 'lockName',
+            },
+        ];
+
+        return (
+            <Modal width={800} visible={showModal} footer={null} onCancel={handleClose}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', width: 500 }}>
+                    <Badge count={counters.threadDumpAll || 0}>
+                        <Tag color="gray" className="hand" onClick={this.updateBadgeFilter('')}>
+                            All
+                        </Tag>
+                    </Badge>
+                    <Badge count={counters.threadDumpRunnable || 0}>
+                        <Tag color="blue" className="hand" onClick={this.updateBadgeFilter('RUNNABLE')}>
+                            Runnable
+                        </Tag>
+                    </Badge>
+                    <Badge count={counters.threadDumpWaiting || 0}>
+                        <Tag color="purple" className="hand" onClick={this.updateBadgeFilter('WAITING')}>
+                            Waiting
+                        </Tag>
+                    </Badge>
+                    <Badge count={counters.threadDumpTimedWaiting || 0}>
+                        <Tag color="orange" className="hand" onClick={this.updateBadgeFilter('TIMED_WAITING')}>
+                            Timed Waiting
+                        </Tag>
+                    </Badge>
+                    <Badge count={counters.threadDumpBlocked || 0}>
+                        <Tag color="red" className="hand" onClick={this.updateBadgeFilter('BLOCKED')}>
+                            Blocked
+                        </Tag>
+                    </Badge>
+                </div>
+                <Divider className="mt-2" />
+                <Input type="text" className="form-control" placeholder="Filter by Lock Name..." onChange={this.updateSearchFilter} />
+                <Divider className="mt-2" />
+                <Table
+                    columns={columns}
+                    expandable={{
+                        expandedRowRender: record => (
+                            <Row className="break" style={{ overflowX: 'scroll' }}>
+                                {Object.entries(record.stackTrace).map(([stK, stV]: [string, any]) => (
+                                    <samp key={`detail-${stK}`}>
+                                        {stV.className}.{stV.methodName}
+                                        <code>
+                                            ({stV.fileName}:{stV.lineNumber})
+                                        </code>
+                                    </samp>
+                                ))}
+                                <span className="mt-1" />
+                            </Row>
+                        ),
+                        rowExpandable: record => record.threadState,
+                    }}
+                    dataSource={filteredList}
+                    scroll={{ x: 700 }}
+                    rowKey={'threadId'}
+                />
+            </Modal>
+        );
+    }
+}
+
+export default ThreadsModal;

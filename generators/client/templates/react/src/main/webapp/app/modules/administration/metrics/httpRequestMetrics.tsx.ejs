@@ -1,0 +1,66 @@
+import * as React from 'react';
+import { TextFormat } from './text-format';
+import { Table, Typography } from 'antd';
+import { nanToZero } from 'app/shared/util/nanToZero';
+
+export interface IHttpRequestMetricsProps {
+    requestMetrics: any;
+    wholeNumberFormat: string;
+    twoDigitAfterPointFormat: string;
+}
+
+const { Title, Text } = Typography;
+
+export class HttpRequestMetrics extends React.Component<IHttpRequestMetricsProps> {
+    render() {
+        const { requestMetrics, wholeNumberFormat, twoDigitAfterPointFormat } = this.props;
+
+        const columns = [
+            {
+                title: 'Code',
+                key: 'code',
+                dataIndex: 'code',
+            },
+            {
+                title: 'Count',
+                key: 'count',
+                dataIndex: 'count',
+                render: (key, record) => <Text>{record.count}</Text>,
+            },
+            {
+                title: 'Mean',
+                key: 'mean',
+                dataIndex: 'mean',
+                render: (key, record) => <TextFormat value={nanToZero(record.mean)} type="number" format={twoDigitAfterPointFormat} />,
+            },
+            {
+                title: 'Max',
+                key: 'max',
+                dataIndex: 'max',
+                render: (key, record) => <TextFormat value={nanToZero(record.max)} type="number" format={twoDigitAfterPointFormat} />,
+            },
+        ];
+
+        const dataSource = Object.keys(requestMetrics.percode).map((key, index) => {
+            return {
+                id: index,
+                code: key,
+                count: requestMetrics.percode[key].count,
+                mean: requestMetrics.percode[key].mean,
+                max: requestMetrics.percode[key].max,
+            };
+        });
+        return (
+            <div>
+                <Title>HTTP requests (time in milliseconds)</Title>
+                <Text>
+                    Total requests:
+                    <Text strong>
+                        <TextFormat value={requestMetrics.all.count} type="number" format={wholeNumberFormat} />
+                    </Text>
+                </Text>
+                <Table columns={columns} dataSource={dataSource} rowKey={'id'} />
+            </div>
+        );
+    }
+}
