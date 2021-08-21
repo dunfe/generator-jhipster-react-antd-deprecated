@@ -143,7 +143,7 @@ export const <%= entityReactName %> = (props: RouteComponentProps<{url: string}>
 <%_ } _%>
 
 <%_ if (searchEngine) { _%>
-  const startSearching = (e) => {
+  const startSearching = () => {
     if (search) {
   <%_ if (paginationInfiniteScroll) { _%>
       dispatch(reset());
@@ -165,7 +165,6 @@ export const <%= entityReactName %> = (props: RouteComponentProps<{url: string}>
       dispatch(searchEntities({query: search}));
   <%_ } _%>
     }
-    e.preventDefault();
   };
 
   const clear = () => {
@@ -431,7 +430,7 @@ export const <%= entityReactName %> = (props: RouteComponentProps<{url: string}>
             <Translate contentKey="<%= i18nKeyPrefix %>.home.refreshListLabel">Refresh List</Translate>
           </Button>
 <%_ if (!readOnly) { _%>
-            <Button type="link">
+            <Button type="primary">
                 <Link to={`${match.url}/new`}>
                   <Translate contentKey="<%= i18nKeyPrefix %>.home.createLabel">
                     Create new <%= entityClassHumanized %>
