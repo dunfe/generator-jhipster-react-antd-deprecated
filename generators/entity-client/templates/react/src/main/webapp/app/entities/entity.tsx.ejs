@@ -167,22 +167,29 @@ export const <%= entityReactName %> = (props: RouteComponentProps<{url: string}>
     }
   };
 
-  const clear = () => {
-  <%_ if (paginationInfiniteScroll) { _%>
-    dispatch(reset());
-  <%_ } _%>
-    setSearch('');
-  <%_ if (!paginationNo) { _%>
-    setPaginationState({
-      ...paginationState,
-      activePage: 1
-    });
-  <%_ } _%>
-    dispatch(getEntities({}));
-  };
-
   const handleSearch = event => setSearch(event.target.value);
 <%_ } _%>
+
+<%_ if (searchEngine) { _%>
+  useEffect(() => {
+    if (search === '') {
+      <%_ if (paginationInfiniteScroll) { _%>
+        dispatch(reset());
+      <%_ } _%>
+        setSearch('');
+      <%_ if (!paginationNo) { _%>
+        setPaginationState({
+          ...paginationState,
+          activePage: 1
+        });
+      <%_ } _%>
+        dispatch(getEntities({}));
+    }
+  }, [search]);
+
+<%_ } _%>
+
+
 
 <%_ if (paginationInfiniteScroll) { _%>
   useEffect(() => {
@@ -442,7 +449,8 @@ export const <%= entityReactName %> = (props: RouteComponentProps<{url: string}>
       </h2>
 <%_ if (searchEngine) { _%>
             <Search
-                    placeholder="input search text"
+            onChange={handleSearch}
+                    placeholder="Input search text"
                     allowClear
                     enterButton="Search"
                     size="large"
@@ -458,17 +466,7 @@ export const <%= entityReactName %> = (props: RouteComponentProps<{url: string}>
                         threshold={0}
                         initialLoad={false}>
 <%_ } _%>
-        {
-          <%= entityInstance %>List && <%= entityInstance %>List.length > 0 ?(
-            <Table columns={columns} dataSource={dataSource} rowKey={'id'} scroll={{ x: true }}/>
-          ) : (
-              !loading && <div className="alert alert-warning">
-              <Translate contentKey="<%= i18nKeyPrefix %>.home.notFound">
-                No <%= entityClassPluralHumanized %> found
-              </Translate>
-            </div>
-          )
-        }
+        <Table columns={columns} dataSource={dataSource} rowKey={'id'} scroll={{ x: true }}/>
 <%_ if (paginationInfiniteScroll) { _%>
         </InfiniteScroll>
 <%_ } _%>
