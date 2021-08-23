@@ -29,9 +29,21 @@ export interface IHeaderProps {
 }
 
 const { SubMenu } = Menu;
+const rootSubmenuKeys = ['entities', 'admin', 'lang', 'account'];
 
 const Sider = (props: IHeaderProps) => {
     const [menuOpen, setMenuOpen] = useState(false);
+
+    const [openKeys, setOpenKeys] = React.useState([]);
+
+    const onOpenChange = keys => {
+      const latestOpenKey = keys.find(key => openKeys.indexOf(key) === -1);
+      if (rootSubmenuKeys.indexOf(latestOpenKey) === -1) {
+        setOpenKeys(keys);
+      } else {
+        setOpenKeys(latestOpenKey ? [latestOpenKey] : []);
+      }
+    };
     <%_ if (enableI18nRTL) { _%>
         useEffect(() => document.querySelector('html').setAttribute('dir', isRTL(Storage.session.get('locale')) ? 'rtl' : 'ltr'));
       <%_ } _%>
@@ -62,7 +74,7 @@ const Sider = (props: IHeaderProps) => {
     return (
         <Layout.Sider width={200} className="site-layout-background" collapsible collapsed={menuOpen} onCollapse={toggleMenu}>
             <LoadingBar className="loading-bar" />
-            <Menu mode="inline" selectedKeys={selectedKeys} onSelect={onSelect} style={{ height: '100%', borderRight: 0 }}>
+            <Menu mode="inline" selectedKeys={selectedKeys} openKeys={openKeys} onOpenChange={onOpenChange} onSelect={onSelect} style={{ height: '100%', borderRight: 0 }}>
                 <Menu.Item key="home" icon={<HomeOutlined />}>
                     <Home />
                 </Menu.Item>

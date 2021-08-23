@@ -433,6 +433,7 @@ export const <%= entityReactName %> = (props: RouteComponentProps<{url: string}>
       <h2 id="<%= entityFileName %>-heading" data-cy="<%= entityClass %>Heading">
         <Translate contentKey="<%= i18nKeyPrefix %>.home.title"><%= entityClassPluralHumanized %></Translate>
         <div className="d-flex justify-content-end">
+          <Space>
           <Button className="mr-2" type="default" onClick={handleSyncList} disabled={loading}>
             <Translate contentKey="<%= i18nKeyPrefix %>.home.refreshListLabel">Refresh List</Translate>
           </Button>
@@ -445,6 +446,7 @@ export const <%= entityReactName %> = (props: RouteComponentProps<{url: string}>
                 </Link>
             </Button>
             <%_ } _%>
+          </Space>
         </div>
       </h2>
 <%_ if (searchEngine) { _%>
