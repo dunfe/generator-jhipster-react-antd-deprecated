@@ -74,7 +74,7 @@ const Sider = (props: IHeaderProps) => {
     return (
         <Layout.Sider width={200} className="site-layout-background" collapsible collapsed={menuOpen} onCollapse={toggleMenu}>
             <LoadingBar className="loading-bar" />
-            <Menu mode="inline" selectedKeys={selectedKeys} openKeys={openKeys} onOpenChange={onOpenChange} onSelect={onSelect} style={{ height: '100%', borderRight: 0 }}>
+            <Menu mode="vertical" selectedKeys={selectedKeys} openKeys={openKeys} onOpenChange={onOpenChange} onSelect={onSelect} style={{ height: '100%', borderRight: 0 }}>
                 <Menu.Item key="home" icon={<HomeOutlined />}>
                     <Home />
                 </Menu.Item>

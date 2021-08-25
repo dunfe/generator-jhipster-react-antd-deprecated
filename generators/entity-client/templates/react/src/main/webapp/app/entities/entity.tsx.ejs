@@ -22,7 +22,7 @@ import InfiniteScroll from 'react-infinite-scroller';
 <%_ } _%>
 import dayjs from 'dayjs';
 import { Link, RouteComponentProps } from 'react-router-dom';
-import { Button, <% if (searchEngine) { %>Input, Form,<% } %> Table, Card, Pagination, Space } from 'antd';
+import { Button, <% if (searchEngine) { %>Input, Form,<% } %> Table, Card, Pagination, Space, PageHeader, Typography } from 'antd';
 import {
   <%_ if (blobFields.length > 0) { _%>
     <%_ if (fieldsContainBlobOrImage) { _%>
@@ -61,6 +61,7 @@ import { overridePaginationStateWithQueryParams } from 'app/shared/util/entity-u
 <%_ } _%>
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 
+const {Title} = Typography;
 <%_ if (searchEngine) { _%>
 const {Search} = Input;
 <%_ } _%>
@@ -232,7 +233,7 @@ export const <%= entityReactName %> = (props: RouteComponentProps<{url: string}>
   <%_ } else { _%>
     sortEntities();
   <%_ } _%>
-  }, [<% if (paginationInfiniteScroll) { %>sorting<% } else { %>paginationState.activePage, paginationState.order, paginationState.sort<% } %><%_ if (searchEngine) { _%>, search<% } %>]);
+  }, [<% if (paginationInfiniteScroll) { %>sorting<% } else { %>paginationState.activePage, paginationState.order, paginationState.sort<% } %>]);
 
   <%_ if (paginationPagination) { _%>
   useEffect(() => {
@@ -430,15 +431,19 @@ export const <%= entityReactName %> = (props: RouteComponentProps<{url: string}>
 
   return (
     <Card>
-      <h2 id="<%= entityFileName %>-heading" data-cy="<%= entityClass %>Heading">
-        <Translate contentKey="<%= i18nKeyPrefix %>.home.title"><%= entityClassPluralHumanized %></Translate>
-        <div className="d-flex justify-content-end">
-          <Space>
-          <Button className="mr-2" type="default" onClick={handleSyncList} disabled={loading}>
+        <PageHeader
+          onBack={() => window.history.back()}
+          title={
+            <Title level={2}>
+              <Translate contentKey="<%= i18nKeyPrefix %>.home.title"><%= entityClassPluralHumanized %></Translate>
+            </Title>
+          }
+          extra={[
+            <Button key='refresh' className="mr-2" type="default" onClick={handleSyncList} disabled={loading}>
             <Translate contentKey="<%= i18nKeyPrefix %>.home.refreshListLabel">Refresh List</Translate>
-          </Button>
+          </Button>,
 <%_ if (!readOnly) { _%>
-            <Button type="primary">
+            <Button key='new' type="primary">
                 <Link to={`${match.url}/new`}>
                   <Translate contentKey="<%= i18nKeyPrefix %>.home.createLabel">
                     Create new <%= entityClassHumanized %>
@@ -446,9 +451,8 @@ export const <%= entityReactName %> = (props: RouteComponentProps<{url: string}>
                 </Link>
             </Button>
             <%_ } _%>
-          </Space>
-        </div>
-      </h2>
+          ]}
+        />
 <%_ if (searchEngine) { _%>
             <Search
             onChange={handleSearch}
@@ -468,7 +472,11 @@ export const <%= entityReactName %> = (props: RouteComponentProps<{url: string}>
                         threshold={0}
                         initialLoad={false}>
 <%_ } _%>
-        <Table columns={columns} dataSource={dataSource} rowKey={'id'} scroll={{ x: true }}/>
+        <Table columns={columns} dataSource={dataSource} rowKey={'id'} scroll={{ x: true }} <%_ if (!databaseTypeCassandra) { _%>
+  <%_ if (paginationPagination) { _%>
+    pagination={false}
+  <% } _%>
+<%_ } _%>/>
 <%_ if (paginationInfiniteScroll) { _%>
         </InfiniteScroll>
 <%_ } _%>
