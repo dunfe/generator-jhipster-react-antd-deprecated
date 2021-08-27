@@ -381,14 +381,14 @@ export const <%= entityReactName %> = (props: RouteComponentProps<{url: string}>
       title: 'Action',
       key: 'action',
       render: (record) => <Space>
-                            <Button type="default">
+                            <Button key='view' type="default">
                               <Link to={`${match.url}/${record.<%= primaryKey.name %>}`}><Translate contentKey="entity.action.view">View</Translate></Link>
                             </Button>
                             <%_ if (!readOnly) { _%>
-                              <Button type="primary">
+                              <Button key='edit' type="primary">
                                 <Link to={`${match.url}/${record.<%= primaryKey.name %>}/edit<%_ if (paginationPagination) { _%>?page=${paginationState.activePage}&sort=${paginationState.sort},${paginationState.order}<%_ } _%>`}><Translate contentKey="entity.action.edit">Edit</Translate></Link>
                               </Button>
-                              <Button danger type="primary">
+                              <Button key='delete' danger type="primary">
                                 <Link to={`${match.url}/${record.<%= primaryKey.name %>}/delete<%_ if (paginationPagination) { _%>?page=${paginationState.activePage}&sort=${paginationState.sort},${paginationState.order}<%_ } _%>`}><Translate contentKey="entity.action.delete">Delete</Translate></Link>
                               </Button>
                             <%_ } _%>

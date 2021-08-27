@@ -1,6 +1,6 @@
 {
   "name": "generator-jhipster-react-antd",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Jhipster stack use react and antd",
   "keywords": [
     "yeoman-generator",
