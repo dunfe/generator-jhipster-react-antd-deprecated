@@ -463,7 +463,7 @@ export const <%= entityReactName %> = (props: RouteComponentProps<{url: string}>
                     onSearch={startSearching}
             />
 <%_ } _%>
-      <div className="table-responsive">
+      <div className="table-responsive" style={{ marginTop: 25, marginBottom: 25 }}>
 <%_ if (paginationInfiniteScroll) { _%>
         <InfiniteScroll pageStart={paginationState.activePage}
                         loadMore={handleLoadMore}
@@ -472,7 +472,7 @@ export const <%= entityReactName %> = (props: RouteComponentProps<{url: string}>
                         threshold={0}
                         initialLoad={false}>
 <%_ } _%>
-        <Table columns={columns} dataSource={dataSource} rowKey={'id'} scroll={{ x: true }} <%_ if (!databaseTypeCassandra) { _%>
+        <Table columns={columns} dataSource={dataSource} rowKey={'id'} scroll={{ x: true, y: 640 }} <%_ if (!databaseTypeCassandra) { _%>
   <%_ if (paginationPagination) { _%>
     pagination={false}
   <% } _%>

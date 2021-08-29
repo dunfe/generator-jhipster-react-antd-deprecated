@@ -221,6 +221,10 @@ _%>
   <%_ } _%>
 <%_ }) _%>
         })
+    } else {
+      form.setFieldsValue({
+        createAt: dayjs(),
+      });
     }
   }, [<%= entityInstance %>Entity])
 
