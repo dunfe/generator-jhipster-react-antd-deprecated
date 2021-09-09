@@ -93,7 +93,7 @@ import { getUsers } from 'app/modules/administration/user-management/user-manage
       <%_ if (uniqueRel.otherEntityAngularName !== entityReactName) { _%>
 import { I<%= uniqueRel.otherEntityAngularName %> } from 'app/shared/model/<%= uniqueRel.otherEntityModelName %>.model';
       <%_ } _%>
-import { getEntities as get<%= upperFirstCamelCase(uniqueRel.otherEntityNamePlural) %> } from 'app/entities/<%= uniqueRel.otherEntityPath %>/<%= uniqueRel.otherEntityFileName %>.reducer';
+import { getEntities as get<%= upperFirstCamelCase(uniqueRel.otherEntityNamePlural) %>, getEntity as get<%= upperFirstCamelCase(uniqueRel.otherEntityName) %> } from 'app/entities/<%= uniqueRel.otherEntityPath %>/<%= uniqueRel.otherEntityFileName %>.reducer';
     <%_ } _%>
   <%_ } _%>
 <%_ }); _%>
@@ -115,15 +115,25 @@ export const <%= entityReactName %>Update = (props: RouteComponentProps<{id: str
 
   const [isNew] = useState(!props.match.params || !props.match.params.id);
 
-  <%_ otherEntityActions.forEach(val => { _%>
-  const <%= val.instance %> = useAppSelector(state => state.<%= val.reducer %>.<%= val.entity === 'User' ? val.instance : 'entities' %>);
+  <%_ otherEntityActions.forEach(val => {
+    if (val.reducer !== 'userManagement' ) { _%>
+      const <%= val.reducer %> = useAppSelector(state => state.<%= val.reducer %>.entity);
+      const <%= val.instance %> = useAppSelector(state => {
+      const _<%= val.reducer %> = state.<%= val.reducer %>.entity
+      if (_<%= val.reducer %>.id) {
+        return [...state.<%= val.reducer %>.<%= val.entity === 'User' ? val.instance : 'entities' %>, _<%= val.reducer %>]
+      } else {
+        return state.<%= val.reducer %>.<%= val.entity === 'User' ? val.instance : 'entities' %>
+      }
+      });
+    <%_ }  else { _%>
+      const <%= val.instance %> = useAppSelector(state => state.<%= val.reducer %>.<%= val.entity === 'User' ? val.instance : 'entities' %>);
+    <%_ } _%>
   <%_ }) _%>
   const <%= entityInstance %>Entity = useAppSelector(state => state.<%= entityInstance %>.entity);
   const loading = useAppSelector(state => state.<%= entityInstance %>.loading);
-  const updating = useAppSelector(state => state.<%= entityInstance %>.updating);
   const updateSuccess = useAppSelector(state => state.<%= entityInstance %>.updateSuccess);
   const [form] = Form.useForm();
-  const [data, setData] = useState({});
 
   const handleClose = () => {
     props.history.push('/<%= entityFileName %>'<%_ if (paginationPagination) { _%> + props.location.search<%_ } _%>);
@@ -194,6 +204,16 @@ _%>
   };
 
   useEffect(() => {
+    <%_ relationships.forEach(rel => {
+    const otherEntityPkName = rel.otherEntity.primaryKey && rel.otherEntity.primaryKey.name || 'id';
+    const relationshipFieldName = rel.relationshipFieldName;
+    const relationshipFieldNamePlural = rel.relationshipFieldNamePlural;
+    if (relationshipFieldName !== 'user' && rel.relationshipManyToOne || (rel.relationshipOneToOne && rel.ownerSide)) { _%>
+      if (<%= entityInstance %>Entity.<%= relationshipFieldName %> && <%= entityInstance %>Entity.<%= relationshipFieldName %>.id && <%= rel.otherEntityName %>.id !== <%= entityInstance %>Entity.<%= relationshipFieldName %>.id) {
+        dispatch(get<%= upperFirstCamelCase(rel.otherEntityAngularName) %>(<%= entityInstance %>Entity.<%= relationshipFieldName %>.id))
+      }
+        <%_ } _%>
+      <%_ }) _%>
     if (!isNew) {
       form.setFieldsValue({
           ...<%= entityInstance %>Entity,
@@ -359,8 +379,15 @@ _%>
               <%_ } _%>
             ]}
             >
-
-            <Select showSearch filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}>
+            <Select showSearch
+            onSearch={value => {
+              dispatch(
+                get<%= upperFirstCamelCase(rel.otherEntityNamePlural) %>({
+                  query: value,
+                })
+              )
+            }}
+            filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}>
               <%_ if (rel.relationshipManyToOne || (rel.relationshipOneToOne && ownerSide)) { _%>
                   {<%= otherEntityNamePlural %>.map(otherEntity => {
                     return <Select.Option key={otherEntity.<%= otherEntityPkName %>} value={otherEntity.<%= otherEntityPkName %>}>{otherEntity.<%= otherEntityField %>}</Select.Option>

@@ -66,9 +66,9 @@ export const searchEntities = createAsyncThunk(
 );
 
 <%_ } _%>
-export const getEntities = createAsyncThunk('<%= entityInstance %>/fetch_entity_list', async ({ page, size, sort }: IQueryParams) => {
+export const getEntities = createAsyncThunk('<%= entityInstance %>/fetch_entity_list', async ({ query, page, size, sort }: IQueryParams) => {
   <%_ if (!paginationNo) { _%>
-  const requestUrl = `${apiUrl}${sort ? `?page=${page}&size=${size}&sort=${sort}&` : '?'}cacheBuster=${new Date().getTime()}`;
+  const requestUrl = `${apiUrl}${query ? `?name.contains=${query}&` : '?'}${sort ? `page=${page}&size=${size}&sort=${sort}&` : '?'}cacheBuster=${new Date().getTime()}`;
   <%_ } else { _%>
   const requestUrl = `${apiUrl}?cacheBuster=${new Date().getTime()}`;
   <%_ } _%>

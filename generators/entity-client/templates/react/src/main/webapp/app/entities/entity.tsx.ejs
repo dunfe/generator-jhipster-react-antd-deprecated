@@ -22,7 +22,7 @@ import InfiniteScroll from 'react-infinite-scroller';
 <%_ } _%>
 import dayjs from 'dayjs';
 import { Link, RouteComponentProps } from 'react-router-dom';
-import { Button, <% if (searchEngine) { %>Input, Form,<% } %> Table, Card, Pagination, Space, PageHeader, Typography } from 'antd';
+import { Button, <% if (searchEngine) { %>Input, Form,<% } %> Table, Card, Pagination, Space, PageHeader, Typography, Tooltip, Input } from 'antd';
 import {
   <%_ if (blobFields.length > 0) { _%>
     <%_ if (fieldsContainBlobOrImage) { _%>
@@ -62,9 +62,7 @@ import { overridePaginationStateWithQueryParams } from 'app/shared/util/entity-u
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 
 const {Title} = Typography;
-<%_ if (searchEngine) { _%>
 const {Search} = Input;
-<%_ } _%>
 export const <%= entityReactName %> = (props: RouteComponentProps<{url: string}>) => {
   const dispatch = useAppDispatch();
 
@@ -171,6 +169,18 @@ export const <%= entityReactName %> = (props: RouteComponentProps<{url: string}>
   const handleSearch = event => setSearch(event.target.value);
 <%_ } _%>
 
+<%_ if (!searchEngine) { _%>
+  const onSearch = value => {
+    dispatch(
+      getEntities({
+        query: value,
+        page: paginationState.activePage - 1,
+        size: paginationState.itemsPerPage,
+        sort: `${paginationState.sort},${paginationState.order}`,
+      })
+    )
+  }
+<%_ } _%>
 <%_ if (searchEngine) { _%>
   useEffect(() => {
     if (search === '') {
@@ -252,24 +262,28 @@ export const <%= entityReactName %> = (props: RouteComponentProps<{url: string}>
   }, [props.location.search]);
   <%_ } _%>
 
-  const sort = p => () => {
+  const sort = (field, order) => {
   <%_ if (paginationInfiniteScroll) { _%>
     dispatch(reset());
     setPaginationState({
       ...paginationState,
       activePage: 1,
-      order: paginationState.order === ASC ? DESC : ASC,
-      sort: p
+      order: order === 'ascend' ? ASC : DESC,
+      sort: field
     });
     setSorting(true);
   <%_ } else { _%>
     setPaginationState({
       ...paginationState,
-      order: paginationState.order === ASC ? DESC : ASC,
-      sort: p
+      order: order === 'ascend' ? ASC : DESC,
+      sort: field
     });
   <%_ } _%>
   };
+
+  const handleTableChange = (pagination, filters, sorter) => {
+    sort(sorter.field, sorter.order);
+  }
 
   <%_ if (paginationPagination) { _%>
   const handlePagination = currentPage =>
@@ -300,17 +314,17 @@ export const <%= entityReactName %> = (props: RouteComponentProps<{url: string}>
             title: '<%= field.fieldNameHumanized %>',
             key: '<%= field.fieldName %>',
             dataIndex: '<%= field.fieldName %>',
+            sorter: true,
+            width: 150,
             <%_ if (field.fieldName !== primaryKey.name) { _%>
                 <%_ if (field.fieldTypeBoolean) { _%>
                     render: () => <%= field.fieldTypeBoolean %>,
                 <%_ } else if (field.fieldTypeTimed) { _%>
                     render: (text) => <TextFormat type="date" value={text} format={APP_DATE_FORMAT} />,
-                    sorter: (a, b) => dayjs(a.lastModifiedDate).unix() - dayjs(b.lastModifiedDate).unix(),
                 <%_ } else if (field.fieldTypeDuration) { _%>
                     render: (text) =>  <DurationFormat value={text} />,
                 <%_ } else if (field.fieldTypeLocalDate) { _%>
                     render: (text) =>  <TextFormat type="date" value={text} format={APP_LOCAL_DATE_FORMAT} />,
-                    sorter: (a, b) => dayjs(a.lastModifiedDate).unix() - dayjs(b.lastModifiedDate).unix(),
                 <%_ } else if (field.fieldIsEnum && enableTranslation) { _%>
                   render: (text) => <Translate contentKey={`<%= frontendAppName %>.<%= field.fieldType %>.${text}`} />,
                 <%_ } else if (field.fieldTypeBinary) { _%>
@@ -331,8 +345,14 @@ export const <%= entityReactName %> = (props: RouteComponentProps<{url: string}>
                         ),
                     <%_ } _%>
                 <%_ } else { _%>
-                    render: (text) => text,
-                    sort: (a, b) => a.<%= field.fieldName %> - b.<%= field.fieldName, %>
+                  ellipsis: {
+                    showTitle: false,
+                  },
+                  render: text => (
+                    <Tooltip placement="topLeft" title={text}>
+                      {text}
+                    </Tooltip>
+                  ),
                 <%_ } _%>
             <%_ } _%>
         },
@@ -462,7 +482,15 @@ export const <%= entityReactName %> = (props: RouteComponentProps<{url: string}>
                     size="large"
                     onSearch={startSearching}
             />
-<%_ } _%>
+<%_ } else { _%>
+  <Search
+                    placeholder="Input search text"
+                    allowClear
+                    enterButton="Search"
+                    size="large"
+                    onSearch={onSearch}
+            />
+<%_ }_%>
       <div className="table-responsive" style={{ marginTop: 25, marginBottom: 25 }}>
 <%_ if (paginationInfiniteScroll) { _%>
         <InfiniteScroll pageStart={paginationState.activePage}
@@ -472,7 +500,7 @@ export const <%= entityReactName %> = (props: RouteComponentProps<{url: string}>
                         threshold={0}
                         initialLoad={false}>
 <%_ } _%>
-        <Table columns={columns} dataSource={dataSource} rowKey={'id'} scroll={{ x: true, y: 640 }} <%_ if (!databaseTypeCassandra) { _%>
+        <Table columns={columns} onChange={handleTableChange} dataSource={dataSource} rowKey={'id'} scroll={{ x: true, y: 640 }} <%_ if (!databaseTypeCassandra) { _%>
   <%_ if (paginationPagination) { _%>
     pagination={false}
   <% } _%>
