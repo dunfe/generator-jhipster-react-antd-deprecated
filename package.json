@@ -8,11 +8,7 @@
     "jhipster-7"
   ],
   "homepage": "https://github.com/dungreact/generator-jhipster-react-antd",
-  "author": {
-    "name": "Dung Nguyen",
-    "email": "dungreact@gmail.com",
-    "url": "dungnq.net"
-  },
+  "author": "Dung Nguyen <dungreact@gmail.com> (dungnq.net)",
   "files": [
     "generators"
   ],
@@ -38,7 +34,7 @@
     "fs-extra": "9.1.0",
     "jsdoc": "3.6.6",
     "mocha": "8.3.0",
-    "prettier": "",
+    "prettier": "^2.4.1",
     "sinon": "9.2.4",
     "yeoman-assert": "3.1.1",
     "yeoman-test": "5.0.1"
@@ -58,5 +54,8 @@
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/dungreact/generator-jhipster-react-antd/issues"
+  },
+  "directories": {
+    "test": "test"
   }
 }

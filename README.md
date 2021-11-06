@@ -96,6 +96,6 @@ MIT © [Dung Nguyen](https://dungnq.net)
 
 
 [npm-image]: https://img.shields.io/npm/v/generator-jhipster-react-antd.svg
-[npm-url]: https://npmjs.org/package/generator-jhipster-react-antd
+[npm-url]: https://www.npmjs.com/package/generator-jhipster-react-antd
 [travis-image]: https://travis-ci.org/dungreact/generator-jhipster-react-antd.svg?branch=main
 [travis-url]: https://travis-ci.org/dungreact/generator-jhipster-react-antd
