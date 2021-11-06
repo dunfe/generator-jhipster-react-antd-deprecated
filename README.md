@@ -49,7 +49,7 @@ yarn global upgrade generator-jhipster-react-antd
 To use this blueprint, run the below command
 
 ```bash
-jhipster --blueprints react-antd
+jhipster --blueprints generator-jhipster-react-antd
 ```
 
 
