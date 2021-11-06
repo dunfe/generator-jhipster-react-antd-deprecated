@@ -1,6 +1,8 @@
 # generator-jhipster-react-antd
-[![NPM version][npm-image]][npm-url] [![Build Status][travis-image]][travis-url] [![Dependency Status][daviddm-image]][daviddm-url]
+[![NPM version][npm-image]][npm-url] [![Build Status][travis-image]][travis-url]
 > JHipster blueprint, Jhipster stack use react and antd
+
+# This blueprint still has many bugs, and I don't have time to test all the functions, so feel free to create the issue. I will check it out. Pull requests are welcome!
 
 # Introduction
 
@@ -90,12 +92,10 @@ jhipster -d --blueprints react-antd
 
 # License
 
-MIT © [Dung Nguyen](dungnq.net)
+MIT © [Dung Nguyen](https://dungnq.net)
 
 
 [npm-image]: https://img.shields.io/npm/v/generator-jhipster-react-antd.svg
 [npm-url]: https://npmjs.org/package/generator-jhipster-react-antd
 [travis-image]: https://travis-ci.org/dungreact/generator-jhipster-react-antd.svg?branch=main
 [travis-url]: https://travis-ci.org/dungreact/generator-jhipster-react-antd
-[daviddm-image]: https://david-dm.org/dungreact/generator-jhipster-react-antd.svg?theme=shields.io
-[daviddm-url]: https://david-dm.org/dungreact/generator-jhipster-react-antd
